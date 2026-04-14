@@ -1,8 +1,6 @@
 import glob
 from pathlib import Path
 
-from server import app
-
 DEVICES_DIR = "/sys/bus/w1/devices/"
 
 
@@ -14,4 +12,4 @@ def find_device():
 
 
 if __name__ == "__main__":
-    app.run("0.0.0.0", 80)
+    find_device()

@@ -1,4 +1,6 @@
-from flask import Flask
+from enum import Enum
+
+from flask import Flask, request
 
 app = Flask(__name__)
 
@@ -10,9 +12,4 @@ def root():
 
 @app.route("/temperature")
 def temperature():
-    return "Temperature"
-
-
-@app.route("/raw")
-def raw():
-    return "Raw"
+    return ""
