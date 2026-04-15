@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pl">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='style.css') }}"
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Quantico:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+            rel="stylesheet"
+        />
+        <title>Czujnik Temperatury</title>
+    </head>
+    <body>
+        <header>
+            <img
+                src="{{ url_for('static', filename='logo.png') }}"
+                alt="Logo PBS"
+            />
+        </header>
+        <main>
+            <section id="container">
+                <h1>-- °C</h1>
+                <p>Ostatnia aktualizacja: godzina, data</p>
+                <button type="button">Pokaż wykres</button>
+            </section>
+        </main>
+        <footer>
+            <p id="footer-text">
+                Jan Bartkowski 2026 (<a
+                    href="https://github.com/OrdinarySoftwareDev"
+                    >@OrdinarySoftwareDev</a
+                >)
+            </p>
+        </footer>
+    </body>
+</html>

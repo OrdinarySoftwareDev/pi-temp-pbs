@@ -1,0 +1,74 @@
+:root {
+    font-size: 16px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    height: 100%;
+}
+
+html,
+body {
+    display: flex;
+    flex-direction: column;
+    background-color: #dfdada;
+    color: #1f1a1a;
+    font-size: 1rem;
+    overflow: hidden;
+    font-family: "Quantico", sans-serif;
+    text-align: center;
+}
+
+main {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+header,
+#container {
+    display: flex;
+    justify-content: center;
+    vertical-align: 50%;
+}
+
+#container {
+    min-height: 90%;
+}
+
+header,
+footer {
+    background-color: #cfcaca;
+    flex-shrink: 0;
+}
+
+header {
+    height: 5rem;
+    padding: 1rem;
+}
+
+footer {
+    height: 2rem;
+    display: flex;
+    align-items: center;
+}
+
+h1 {
+    font-size: 8rem;
+    font-weight: 900;
+}
+
+#footer-text {
+    text-align: left;
+    color: #9f9a9a;
+}
+
+#footer-text a {
+    color: #9f9a9a;
+}
