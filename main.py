@@ -21,7 +21,7 @@ if not DB_FILE.exists():
     DB_FILE.parent.mkdir(parents=True, exist_ok=True)
     DB_FILE.touch()
 
-# Inicjalizacja aplikacji Flask
+# Inicjalizacja Flask
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DB_FILE.absolute()}"
 
@@ -55,6 +55,8 @@ chart_data: dict = {}
 # Strona główna
 @app.route("/")
 def root():
+    api
+
     return render_template(
         "index.html",
         temp2f=str(list(chart_data.values())[0]),
@@ -88,41 +90,46 @@ def api_temp():
         print("Info: Odczytuję temperaturę z czujnika...")
         reading = sensor.read()
 
-        entry = LogEntry()
-        entry.temperature = reading
-        entry.timestamp = datetime.now()
-
-        db.session.add(entry)
-        db.session.commit()
-
         return jsonify(
-            {"temperature": entry.temperature, "timestamp": entry.timestamp.isoformat()}
+            {"temperature": reading, "timestamp": datetime.now().isoformat()}
         )
 
 
-def update_temp():
+def log_temp():
     with app.app_context():
         global chart_data
 
-        api_temp()
+        r = api_temp().json
+        if r:
+            entry = LogEntry()
+            entry.temperature = r["temperature"]
+            entry.timestamp = r["timestamp"]
 
-        # aktualizacja wykresu
-        q = LogEntry.query.order_by(LogEntry.timestamp.desc()).limit(18).all()
+            db.session.add(entry)
+            db.session.commit()
 
-        chart_data = {}
+            # aktualizacja wykresu
+            q = LogEntry.query.order_by(LogEntry.timestamp.desc()).limit(24).all()
 
-        for entry in q:
-            chart_data[str(entry.timestamp)] = float(
-                f"{entry.temperature / 1000:.1f}"
-            )  # zaokrąglenie do jednego miejsca po przecinku
-        # print(chart_data)
+            chart_data = {}
+
+            for entry in q:
+                chart_data[str(entry.timestamp)] = float(
+                    f"{entry.temperature / 1000:.1f}"
+                )  # zaokrąglenie do jednego miejsca po przecinku
+            # print(chart_data)
+        else:
+            print("BŁĄD: Brak JSONa w odpowiedzi!")
+
+def read():
 
 
 def loop():
-    schedule.every(60).minutes.do(update_temp)
+    schedule.every(60).minutes.do(log_temp)
+    schedule.every(5).minutes.do(read_temp)
     while True:
         schedule.run_pending()
-        time.sleep(60)
+        time.sleep(1)
 
 
 if __name__ == "__main__":
@@ -133,8 +140,10 @@ if __name__ == "__main__":
         raise RuntimeError(
             f"Program może być uruchamiany tylko na systemach Linux! Wykryto: {os_name}"
         )
-    update_temp()
-    updater_thread = threading.Thread(target=loop, daemon=True)
-    updater_thread.start()
+
+    # log_temp()
+
+    logger_thread = threading.Thread(target=loop, daemon=True)
+    logger_thread.start()
 
     app.run("0.0.0.0", 8080, debug=False)

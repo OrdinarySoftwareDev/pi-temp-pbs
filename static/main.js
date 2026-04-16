@@ -7,7 +7,7 @@ function toggleChartVisibility() {
     chartHidden = !chartHidden;
     toggleButton.textContent = (chartHidden ? "Pokaż" : "Ukryj") + " wykres";
     toggleButton.classList.toggle("rotated");
-    chartDiv.hidden = chartHidden;
+    chartDiv.classList.toggle("hidden");
 }
 
 toggleButton.onclick = function () {
