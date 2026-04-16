@@ -4,10 +4,10 @@
 
 * {
     margin: 0;
-    padding: 0;
 }
 
-html {
+html,
+body {
     height: 100%;
 }
 
@@ -24,28 +24,34 @@ body {
 }
 
 main {
-    flex: 1 1 auto;
     display: flex;
+    flex: 1 1 auto;
+    overflow-y: auto;
     justify-content: center;
     align-items: center;
     padding: 2rem;
+    padding-bottom: 4rem;
 }
 
 header,
 #container {
     display: flex;
     justify-content: center;
-    vertical-align: 50%;
 }
 
 #container {
     min-height: 90%;
+    align-items: center;
+    flex-direction: column;
+}
+
+button {
+    margin: 0.5rem;
 }
 
 header,
 footer {
     background-color: #cfcaca;
-    flex-shrink: 0;
 }
 
 header {
@@ -53,22 +59,83 @@ header {
     padding: 1rem;
 }
 
-footer {
-    height: 2rem;
-    display: flex;
-    align-items: center;
-}
-
 h1 {
     font-size: 8rem;
     font-weight: 900;
 }
 
-#footer-text {
-    text-align: left;
-    color: #9f9a9a;
+footer {
+    height: 2rem;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    /* width: 100vw; */
 }
 
-#footer-text a {
-    color: #9f9a9a;
+#footer-elements {
+    display: flex;
+    height: inherit;
+    margin: 0 auto;
+    margin-left: 1rem;
+    text-align: left;
+    align-items: center;
+    color: #000;
+}
+
+.fade-in {
+    opacity: 0.6;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.fade-in:hover {
+    opacity: 0.8;
+}
+
+#chart-div {
+    position: relative;
+    justify-self: center;
+    height: 15rem;
+    width: 30rem;
+}
+
+#chart-toggle {
+    display: inline-flex;
+    background: none;
+    cursor: pointer;
+    border: none;
+    overflow: hidden;
+    max-height: 1.2rem;
+}
+
+#chart-toggle::before {
+    content: "";
+    background-image: url("arrow.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 0.5rem;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-right: 0.2rem;
+    padding-left: 1rem;
+
+    rotate: 90deg;
+    transition: rotate 0.2s ease-in-out;
+}
+
+#chart-toggle.rotated::before {
+    rotate: 0deg;
+}
+
+#footer-text {
+    display: inherit;
+    max-height: 2rem;
+}
+
+#invertocat {
+    display: inherit;
+    height: 2rem;
+    width: auto;
 }
