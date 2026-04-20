@@ -23,11 +23,11 @@ Odczytuje temperaturę z czujnika DS18B20 podłączonego do interfejsu 1-wire, i
 - **Production deployment** nginx + gunicorn + systemd
 
 ## Wykorzystane technologie i języki:
-- Python (Flask, APScheduler)
-- Vanilla HTML, CSS, JS (Chart.JS)
-- SQAlchemy, SQLite
-- TOML (plik konfiguracji `config.toml`)
-- Bash (skrypt `deploy.sh`)
-- nginx
-- gunicorn
-- systemd
+- **Python** *(Flask, APScheduler)*
+- Vanilla **HTML, CSS, JS** *(Chart.JS)*
+- **SQAlchemy, SQLite**
+- **TOML** *(plik konfiguracji `config.toml`)*
+- **Bash** *(skrypt `deploy.sh`)*
+- **nginx**
+- **gunicorn**
+- **systemd**
