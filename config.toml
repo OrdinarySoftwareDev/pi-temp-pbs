@@ -1,19 +1,20 @@
 #! czas podawany w sekundach
 [behavior]
 debug = false # przy włączonym trybie debug, wyłączony jest logging
-update_on_start = false # decyduje o tym, czy odświeżyć temperaturę po uruchomieniu
+log_on_start = false # decyduje o tym, czy zapisać temperaturę tuż po uruchomieniu
 chart_max_ticks = 24
 logs_endpoint_max = 250 # najwięsza ilość logów które może zwrócić /logs
 precision = 2 # dokładność wyświetlanej temperatury (miejsca po przecinku, od 0 do 3)
 
 [scheduler]
-logging_interval = 30 # częstotliwość zapisu temperatury do logów
-update_interval = 10 # częstotliwość odświeżania temperatury na stronie
+logging_interval = 3600 # częstotliwość zapisu temperatury do logów
+update_interval = 600 # częstotliwość odświeżania temperatury na stronie
 sleep_time = 1 # czas oczekiwania na odświeżenie listy zadań
 
 [filesystem]
 db_file = "db/temperature_log.db"
 
+# tylko do użycia w development
 [web]
 ip = "0.0.0.0"
 port = "8080"

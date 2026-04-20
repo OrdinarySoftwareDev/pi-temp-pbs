@@ -4,7 +4,7 @@ PROJECT_DIR="$SCRIPT_DIR"
 SERVICE_NAME="pi-temp-pbs.service"
 SERVICE_FILE="/etc/systemd/system/$SERVICE_NAME"
 
-echo "📁 Deploying $PROJECT_DIR → /opt/pi-temp-pbs"
+echo "Deploying $PROJECT_DIR to /opt/pi-temp-pbs"
 
 sudo mkdir -p /opt/pi-temp-pbs
 sudo chown pi:pi /opt/pi-temp-pbs
@@ -35,5 +35,5 @@ sudo systemctl daemon-reload
 sudo systemctl enable $SERVICE_NAME
 sudo systemctl restart $SERVICE_NAME
 
-echo "✅ Deployed! Status:"
+echo "Deployed! Status:"
 sudo systemctl status $SERVICE_NAME --no-pager

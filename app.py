@@ -13,10 +13,11 @@ import config
 from config import logger
 from sensor import find_device
 
-# Inicjalizacja Flask
+# inicjalizacja Flask
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{config.DB_FILE.absolute()}"
 
+# harmonogram zadań
 scheduler = APScheduler()
 scheduler.init_app(app)
 
@@ -29,7 +30,7 @@ db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
 
-# Wpis do logów
+# klasa dla wierszy w bazie danych
 class LogEntry(db.Model):
     id: Mapped[int] = mapped_column(autoincrement=True, unique=True, primary_key=True)
     temperature: Mapped[int] = mapped_column()
@@ -41,19 +42,100 @@ class LogEntry(db.Model):
 
 sensor = find_device()
 
-with app.app_context():
-    db.create_all()
-
 chart_data: dict = {}
 latest_measurement: tuple = ()
 
 
+"""FUNKCJE POMOCNICZE"""
+
+
+# proste formatowanie temperatury
 def format_temperature(milicelsius: int, precision: int, separator: str = ".") -> str:
     celsius = f"{(milicelsius / 1000):.{precision}f}".replace(".", separator)
     return celsius
 
 
-# Strona główna
+# uruchomienie fukcji z kontekstem aplikacji
+def run_with_context(func):
+    with app.app_context():
+        func()
+
+
+# dekorator zapewniający kontekst dla zadań APScheduler
+def run_with_context_job(func):
+    def wrapper(*args, **kwargs):
+        run_with_context(lambda: func(*args, **kwargs))
+
+    return wrapper
+
+
+run_with_context(lambda: db.create_all())
+
+
+# aktualizacja tekstu na stronie
+@run_with_context_job
+def update_temp():
+    global latest_measurement
+
+    reading = sensor.read()
+    if reading:
+        latest_measurement = (
+            format_temperature(reading, config.PRECISION),
+            str(datetime.now()).split(".")[0],
+        )
+
+    else:
+        logger.error("Temperature read request to server failed!")
+
+
+# zapis temperatury do bazy daych
+@run_with_context_job
+def log_temp():
+    global latest_measurement
+
+    reading = sensor.read()
+    if reading:
+        entry = LogEntry()
+        entry.temperature = reading
+        entry.timestamp = datetime.now()
+
+        db.session.add(entry)
+        db.session.commit()
+
+        # aktualizacja temperatury na stronie
+        latest_measurement = (
+            format_temperature(reading, config.PRECISION),
+            str(entry.timestamp).split(".")[0],
+        )
+
+        chart_from_db()
+    else:
+        logger.error("Temperature read request to server failed!")
+
+
+# aktualizacja danych służących do generacji wykresu po stronie klienta
+@run_with_context_job
+def chart_from_db():
+    global chart_data
+
+    q = (
+        LogEntry.query.order_by(LogEntry.timestamp.desc())
+        .limit(config.CHART_MAX_TICKS)
+        .all()
+    )
+
+    chart_data = {}
+
+    for entry in q:
+        chart_data[str(entry.timestamp)] = float(
+            format_temperature(entry.temperature, 3, ".")
+        )
+
+
+"""ENDPOINTY"""
+
+
+# strona główna
 @app.route("/")
 def root():
     if not latest_measurement:
@@ -69,7 +151,21 @@ def root():
     )
 
 
-# Zwraca `n` najnowszych wpisów w bazie danych, posortowanych czasem wpisu rosnąco
+# healthcheck
+@app.route("/health")
+def health():
+    return jsonify(
+        {
+            "status": "healthy",
+            "latest_measurement": jsonify(latest_measurement)
+            if latest_measurement
+            else None,
+            "jobs": len(scheduler.get_jobs()),
+        }
+    )
+
+
+# zwraca `n` najnowszych wpisów w bazie danych, posortowanych czasem wpisu rosnąco
 @app.route("/logs")
 def api_logs():
     n = request.args.get("n")
@@ -90,94 +186,42 @@ def api_logs():
 # Zwraca temperaturę w milicelsjuszach
 @app.route("/temperature")
 def api_temp():
-    with app.app_context():
-        reading = sensor.read()
-        logger.info(f"Endpoint `/temperature` hit. Aktualna temperatura: {reading}")
-        return jsonify(
-            {"temperature": reading, "timestamp": datetime.now().isoformat()}
+    reading = sensor.read()
+    logger.info(f"Endpoint `/temperature` hit. Aktualna temperatura: {reading}")
+    return jsonify({"temperature": reading, "timestamp": datetime.now().isoformat()})
+
+
+"""INIT"""
+
+
+def init_app():
+    logger.info("Application init")
+
+    os_name = platform.system()
+    if os_name.lower() != "linux":
+        raise RuntimeError(
+            f"Program może być uruchamiany tylko na systemach Linux! Wykryto: {os_name}"
         )
 
+    if config.LOG_ON_START:
+        run_with_context(log_temp)
 
-def update_temp():
-    logger.info("update_temp() called")
-    with app.app_context():
-        global latest_measurement
-        reading = sensor.read()
-        if reading:
-            latest_measurement = (
-                format_temperature(reading, config.PRECISION),
-                str(datetime.now()).split(".")[0],
-            )
+    run_with_context(chart_from_db)
 
-        else:
-            logger.error("Temperature read request to server failed!")
-
-
-def chart_from_db():
-    print(chart_from_db)
-    with app.app_context():
-        global chart_data
-        # aktualizacja wykresu
-        q = (
-            LogEntry.query.order_by(LogEntry.timestamp.desc())
-            .limit(config.CHART_MAX_TICKS)
-            .all()
-        )
-
-        chart_data = {}
-
-        for entry in q:
-            chart_data[str(entry.timestamp)] = float(
-                format_temperature(entry.temperature, 3, ".")
-            )
-
-
-def log_temp():
-    print("log_temp() called")
-    with app.app_context():
-        global latest_measurement
-
-        reading = sensor.read()
-        if r:
-            entry = LogEntry()
-            entry.temperature = r["temperature"]
-            entry.timestamp = datetime.fromisoformat(r["timestamp"])
-
-            db.session.add(entry)
-            db.session.commit()
-
-            # aktualizacja temperatury na stronie
-            latest_temperature = (
-                format_temperature(r["temperature"], config.PRECISION),
-                r["timestamp"],
-            )
-
-            chart_from_db()
-        else:
-            logger.error("Temperature read request to server failed!")
-
-
-os_name = platform.system()
-if os_name.lower() != "linux":
-    raise RuntimeError(
-        f"Program może być uruchamiany tylko na systemach Linux! Wykryto: {os_name}"
+    scheduler.add_job(
+        id="log_temp",
+        func=log_temp,
+        trigger="interval",
+        seconds=config.LOGGING_INTERVAL,
+    )
+    scheduler.add_job(
+        id="update_temp",
+        func=update_temp,
+        trigger="interval",
+        seconds=config.UPDATE_INTERVAL,
     )
 
-
-def run_with_context(func):
-    with app.app_context():
-        func()
+    scheduler.start()
 
 
-if config.UPDATE_ON_START:
-    run_with_context(log_temp)
-
-run_with_context(chart_from_db)
-
-scheduler.add_job(
-    id="log_temp", func=log_temp, trigger="interval", seconds=config.LOGGING_INTERVAL
-)
-scheduler.add_job(
-    id="update_temp", func=log_temp, trigger="interval", seconds=config.UPDATE_INTERVAL
-)
-scheduler.start()
+init_app()

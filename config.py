@@ -11,16 +11,16 @@ ALLOW_INCOMPLETE_CONFIG = False
 DEFAULTS = {
     "behavior": {
         "debug": False,
-        "update_on_start": False,
+        "log_on_start": False,
         "chart_max_ticks": 24,
         "precision": 2,
     },
     "scheduler": {
         "logging_interval": 3600,
         "update_interval": 300,
-        "sleep_time": 30,
+        "sleep_time": 10,
     },
-    "filesystem": {"db_file": "db/logs.db"},
+    "filesystem": {"db_file": "db/temperature_log.db"},
     "web": {"ip": "0.0.0.0", "port": "8080"},
 }
 
@@ -64,7 +64,7 @@ try:
         CONFIG: dict = tomllib.load(cfile)
 
         DEBUG_MODE: bool = checked_grab("behavior.debug")
-        UPDATE_ON_START: bool = checked_grab("behavior.update_on_start")
+        LOG_ON_START: bool = checked_grab("behavior.log_on_start")
         CHART_MAX_TICKS: int = checked_grab("behavior.chart_max_ticks")
         PRECISION: int = checked_grab("behavior.precision")
 
@@ -96,7 +96,7 @@ try:
                 "W trybie debug temperatury NIE są zapisywany do bazy danych!"
             )
 
-        # Tworzymy bazę danych, jeśli nie istnieje
+        # tworzymy bazę danych, jeśli nie istnieje
         if not DB_FILE.exists():
             logging.warning(
                 f"Nie wykryto pliku pod ścieżką {DB_FILE}. Zostanie on stworzony automatycznie wraz z katalogiem."
