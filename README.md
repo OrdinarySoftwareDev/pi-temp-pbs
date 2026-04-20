@@ -11,7 +11,7 @@ Kod stworzony w ramach praktyk zawodowych, na Raspberry Pi 5.
 
 Odczytuje temperaturę z czujnika DS18B20 podłączonego do interfejsu 1-wire, i za pomocą Pythona + Flask wyświetlą ją na frontendzie wraz z godzinnym wykresem z ostatniego dnia.
 
-<p align="center>
+<p align="center">
     <img src="readme/site.jpg" alt="Dashboard screenshot" width="80%"/>
 </p>
 <i><p align="center">Zrzut ekranu dashboard</p></i>
