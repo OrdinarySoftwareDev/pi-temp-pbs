@@ -1,17 +1,22 @@
 #!/bin/bash
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_DIR="$SCRIPT_DIR"
+TARGET_DIR="/opt/pi-temp-pbs"
 SERVICE_NAME="pi-temp-pbs.service"
 SERVICE_FILE="/etc/systemd/system/$SERVICE_NAME"
 
-echo "Deploying $PROJECT_DIR to /opt/pi-temp-pbs"
+echo "Deploying $PROJECT_DIR to $TARGET_DIR"
 
-sudo mkdir -p /opt/pi-temp-pbs
-sudo chown pi:pi /opt/pi-temp-pbs
+sudo mkdir -p "$TARGET_DIR"
+sudo chown pi:pi "$TARGET_DIR"
 
-sudo rsync -a "$PROJECT_DIR/" /opt/pi-temp-pbs/
-sudo chown -R pi:pi /opt/pi-temp-pbs
+sudo rsync -a "$PROJECT_DIR/" "$TARGET_DIR"
+sudo chown -R pi:pi "$TARGET_DIR"
 
+cd "$TARGET_DIR"
+python3 -m venv venv
+source venv/bin/activate
+pip3 install -r requirements.txt
 
 sudo tee "$SERVICE_FILE" > /dev/null << 'EOF'
 [Unit]
